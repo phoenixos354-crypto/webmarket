@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prospek Website — Flowchart 13 Tools</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #080808;
+    --surface: #101010;
+    --border: #1c1c1c;
+    --green: #b5f23d;
+    --blue: #4a9ef8;
+    --purple: #a78bfa;
+    --orange: #f59e0b;
+    --red: #f87171;
+    --teal: #2dd4bf;
+    --pink: #f472b6;
+    --text: #e5e5e5;
+    --muted: #444;
+    --muted2: #666;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image:
+      linear-gradient(rgba(181,242,61,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(181,242,61,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .page {
+    position:relative;
+    z-index:1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 20px 100px;
+  }
+
+  /* ── HEADER ── */
+  .hdr { text-align:center; margin-bottom:52px; }
+  .hdr-tag {
+    display:inline-block;
+    font-family:'Space Mono',monospace;
+    font-size:9px; letter-spacing:.22em;
+    color:var(--green); border:1px solid rgba(181,242,61,.3);
+    padding:4px 14px; border-radius:2px; margin-bottom:14px;
+  }
+  .hdr h1 { font-size:clamp(26px,5vw,42px); font-weight:800; letter-spacing:-.02em; line-height:1.1; }
+  .hdr h1 em { color:var(--green); font-style:normal; }
+  .hdr p { font-family:'Space Mono',monospace; font-size:10px; color:var(--muted2); margin-top:10px; letter-spacing:.05em; }
+
+  /* ── LEGEND ── */
+  .legend {
+    display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
+    margin-bottom:44px;
+  }
+  .leg {
+    display:flex; align-items:center; gap:7px;
+    font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.1em; color:var(--muted2);
+  }
+  .leg-box {
+    width:14px; height:14px; border-radius:3px; flex-shrink:0;
+  }
+
+  /* ── FLOW COLUMN ── */
+  .flow { display:flex; flex-direction:column; align-items:center; gap:0; }
+
+  /* connector line */
+  .line {
+    width:2px; height:28px;
+    background: linear-gradient(to bottom, var(--clr, #333), transparent);
+    flex-shrink:0;
+  }
+  .line.solid { background: var(--clr,#333); }
+
+  /* arrow */
+  .arrow {
+    font-size:18px; color:var(--clr,var(--muted));
+    line-height:1; margin:-6px 0;
+  }
+
+  /* START / END */
+  .node-start, .node-end {
+    width:180px; height:52px;
+    border-radius:26px;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:13px; letter-spacing:.05em;
+  }
+  .node-start {
+    background:rgba(181,242,61,.12);
+    border:2px solid var(--green);
+    color:var(--green);
+  }
+  .node-end {
+    background:rgba(181,242,61,.18);
+    border:2px solid var(--green);
+    color:var(--green);
+    font-size:15px;
+  }
+
+  /* TOOL node */
+  .node-tool {
+    width:100%; max-width:560px;
+    border-radius:10px;
+    border:1px solid var(--c, #333);
+    background: var(--bg2, #111);
+    overflow:hidden;
+    transition: box-shadow .2s;
+  }
+  .node-tool:hover { box-shadow: 0 0 0 1px var(--c,#333); }
+
+  .tool-head {
+    display:flex; align-items:center; gap:12px;
+    padding:13px 18px;
+    background: var(--bg2,#111);
+    cursor:pointer;
+  }
+  .tool-icon {
+    width:34px; height:34px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px; flex-shrink:0;
+    background: rgba(255,255,255,.05);
+    border:1px solid var(--c,#333);
+  }
+  .tool-meta { flex:1; }
+  .tool-num {
+    font-family:'Space Mono',monospace; font-size:8px;
+    letter-spacing:.2em; color:var(--c,#666); margin-bottom:3px;
+  }
+  .tool-name { font-size:14px; font-weight:700; letter-spacing:-.01em; }
+  .tool-type {
+    font-family:'Space Mono',monospace; font-size:8px;
+    padding:3px 8px; border-radius:3px; letter-spacing:.1em;
+    background:rgba(255,255,255,.05); color:var(--muted2);
+    flex-shrink:0;
+  }
+  .tool-chevron { color:var(--muted); font-size:14px; transition:transform .3s; margin-left:4px; }
+
+  .tool-body {
+    display:none;
+    padding:0 18px 16px;
+    border-top:1px solid var(--border);
+  }
+  .tool-desc {
+    font-family:'Space Mono',monospace; font-size:10px; line-height:1.7;
+    color:#888; margin:12px 0 10px;
+  }
+  .tool-steps { display:flex; flex-direction:column; gap:7px; }
+  .tool-step {
+    display:flex; align-items:flex-start; gap:10px;
+    font-size:12px; line-height:1.5; color:#aaa;
+  }
+  .ts-num {
+    width:20px; height:20px; border-radius:50%;
+    background:rgba(255,255,255,.05); border:1px solid var(--c,#333);
+    color:var(--c,#888); font-family:'Space Mono',monospace;
+    font-size:8px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; margin-top:2px;
+  }
+  .tool-out {
+    display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap;
+  }
+  .out-label { font-family:'Space Mono',monospace; font-size:8px; color:var(--muted2); letter-spacing:.15em; }
+  .out-tag {
+    font-family:'Space Mono',monospace; font-size:9px; font-weight:700;
+    padding:3px 10px; border-radius:3px;
+    background:rgba(255,255,255,.05); border:1px solid var(--c,#333); color:var(--c,#aaa);
+  }
+
+  /* open state */
+  .node-tool.open .tool-body { display:block; }
+  .node-tool.open .tool-chevron { transform:rotate(180deg); }
+
+  /* IF/ELSE diamond */
+  .diamond-wrap {
+    display:flex; flex-direction:column; align-items:center;
+    width:100%; max-width:560px;
+  }
+  .diamond {
+    width:160px; height:64px;
+    background:rgba(251,191,36,.08);
+    border:1px solid rgba(251,191,36,.5);
+    transform:rotate(0deg);
+    border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono',monospace; font-size:10px; font-weight:700;
+    color:var(--orange); letter-spacing:.05em;
+    text-align:center; line-height:1.4;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    padding:0 28px;
+  }
+  .branch-row {
+    display:flex; width:100%; align-items:flex-start; justify-content:center; gap:0;
+    margin-top:0;
+  }
+  .branch {
+    display:flex; flex-direction:column; align-items:center;
+    flex:1; max-width:260px;
+  }
+  .branch-label {
+    font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.15em;
+    padding:3px 10px; border-radius:3px; margin:6px 0;
+    font-weight:700;
+  }
+  .yes-label { background:rgba(181,242,61,.1); color:var(--green); }
+  .no-label  { background:rgba(248,113,113,.1); color:var(--red); }
+
+  .branch-line {
+    width:1px; background:var(--border); flex:1; min-height:20px;
+  }
+  .h-line {
+    height:1px; background:var(--border);
+    align-self:flex-start; margin-top:0;
+  }
+
+  /* phase label */
+  .phase-label-row {
+    display:flex; align-items:center; gap:14px;
+    width:100%; max-width:560px; margin:4px 0;
+  }
+  .phase-label {
+    font-family:'Space Mono',monospace; font-size:8px; letter-spacing:.2em;
+    color:var(--muted2); white-space:nowrap;
+  }
+  .phase-line { flex:1; height:1px; background:var(--border); }
+
+  /* branch node small */
+  .node-small {
+    width:100%; max-width:220px;
+    border-radius:8px;
+    border:1px solid var(--c,#333);
+    background:#0f0f0f;
+    padding:10px 14px;
+    font-size:11px; line-height:1.5; color:#aaa;
+    text-align:center;
+  }
+  .node-small strong { color:var(--text); display:block; margin-bottom:3px; font-size:12px; }
+
+  /* loop back arrow */
+  .loop-box {
+    width:100%; max-width:560px;
+    border:1px dashed var(--border);
+    border-radius:8px;
+    padding:12px 18px;
+    display:flex; align-items:center; gap:12px;
+    background:rgba(255,255,255,.02);
+  }
+  .loop-icon { font-size:20px; }
+  .loop-text { font-family:'Space Mono',monospace; font-size:10px; color:#777; line-height:1.6; }
+  .loop-text strong { color:var(--green); }
+
+  /* animate in */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .flow > * { animation: fadeUp .5s ease both; }
+  .flow > *:nth-child(1)  { animation-delay:.05s }
+  .flow > *:nth-child(2)  { animation-delay:.10s }
+  .flow > *:nth-child(3)  { animation-delay:.15s }
+  .flow > *:nth-child(4)  { animation-delay:.20s }
+  .flow > *:nth-child(5)  { animation-delay:.25s }
+  .flow > *:nth-child(6)  { animation-delay:.30s }
+  .flow > *:nth-child(7)  { animation-delay:.35s }
+  .flow > *:nth-child(8)  { animation-delay:.40s }
+  .flow > *:nth-child(9)  { animation-delay:.45s }
+  .flow > *:nth-child(10) { animation-delay:.50s }
+  .flow > *:nth-child(11) { animation-delay:.55s }
+  .flow > *:nth-child(12) { animation-delay:.60s }
+  .flow > *:nth-child(13) { animation-delay:.65s }
+  .flow > *:nth-child(14) { animation-delay:.70s }
+  .flow > *:nth-child(15) { animation-delay:.75s }
+  .flow > *:nth-child(16) { animation-delay:.80s }
+  .flow > *:nth-child(17) { animation-delay:.85s }
+  .flow > *:nth-child(18) { animation-delay:.90s }
+  .flow > *:nth-child(19) { animation-delay:.95s }
+  .flow > *:nth-child(20) { animation-delay:1.0s }
+  .flow > *:nth-child(21) { animation-delay:1.05s }
+  .flow > *:nth-child(22) { animation-delay:1.10s }
+  .flow > *:nth-child(23) { animation-delay:1.15s }
+  .flow > *:nth-child(24) { animation-delay:1.20s }
+  .flow > *:nth-child(25) { animation-delay:1.25s }
+  .flow > *:nth-child(26) { animation-delay:1.30s }
+  .flow > *:nth-child(27) { animation-delay:1.35s }
+  .flow > *:nth-child(28) { animation-delay:1.40s }
+  .flow > *:nth-child(29) { animation-delay:1.45s }
+  .flow > *:nth-child(30) { animation-delay:1.50s }
+
+  .footer {
+    text-align:center; margin-top:56px;
+    font-family:'Space Mono',monospace; font-size:9px; color:var(--muted);
+    letter-spacing:.1em;
+  }
+  .footer span { color:var(--green); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-tag">PROSPEK WEBSITE · FLOWCHART SISTEM LENGKAP</div>
+    <h1>Alur <em>13 Tools</em><br>dari Stranger ke Referrer</h1>
+    <p>Klik setiap node untuk detail · Termasuk cabang IF / ELSE di setiap keputusan penting</p>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="leg"><div class="leg-box" style="background:rgba(181,242,61,.2);border:1px solid rgba(181,242,61,.5)"></div> WEB APP (5 tools)</div>
+    <div class="leg"><div class="leg-box" style="background:rgba(167,139,250,.2);border:1px solid rgba(167,139,250,.5)"></div> AI AGENT (4 tools)</div>
+    <div class="leg"><div class="leg-box" style="background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.4)"></div> OPENCLAW AGENT (3 tools)</div>
+    <div class="leg"><div class="leg-box" style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.4);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)"></div> IF / ELSE</div>
+  </div>
+
+  <!-- ═══════ FLOW ═══════ -->
+  <div class="flow">
+
+    <!-- START -->
+    <div class="node-start">🌐 STRANGER</div>
+    <div class="line solid" style="--clr:var(--green)"></div>
+
+    <!-- ── FASE 1: DISCOVERY ── -->
+    <div class="phase-label-row"><div class="phase-line"></div><div class="phase-label">FASE 1 · DISCOVERY</div><div class="phase-line"></div></div>
+
+    <!-- TOOL 1: Lead Generation Hunter -->
+    <div class="node-tool" style="--c:var(--orange);--bg2:#0f0c07" onclick="toggle(this)">
+      <div class="tool-head">
+        <div class="tool-icon">🦅</div>
+        <div class="tool-meta">
+          <div class="tool-num">TOOL 01 · OPENCLAW AGENT</div>
+          <div class="tool-name">Lead Generation Hunter</div>
+        </div>
+        <div class="tool-type">OPENCLAW</div>
+        <div class="tool-chevron">↓</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Secara proaktif mencari bisnis yang butuh website dari LinkedIn, Google Maps, dan direktori online.</div>
+        <div class="tool-steps">
+          <div class="tool-step"><div class="ts-num">1</div><span>Crawl & scrape data bisnis dengan website outdated atau tidak ada website</span></div>
+          <div class="tool-step"><div class="ts-num">2</div><span>Analisis online presence berdasarkan industri & size bisnis</span></div>
+          <div class="tool-step"><div class="ts-num">3</div><span>Generate personalized outreach email/LinkedIn message</span></div>
+          <div class="tool-step"><div class="ts-num">4</div><span>Track response & masukkan ke pipeline dengan auto-scoring</span></div>
+        </div>
+        <div class="tool-out">
+          <span class="out-label">OUTPUT →</span>
+          <span class="out-tag">Email/DM terkirim ke target</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- TOOL 2: Competitor Intelligence Agent (paralel di fase discovery) -->
+    <div class="node-tool" style="--c:var(--purple);--bg2:#0d0b12" onclick="toggle(this)">
+      <div class="tool-head">
+        <div class="tool-icon">🔍</div>
+        <div class="tool-meta">
+          <div class="tool-num">TOOL 02 · AI AGENT (PARALEL)</div>
+          <div class="tool-name">Competitor Intelligence Agent</div>
+        </div>
+        <div class="tool-type">AI AGENT</div>
+        <div class="tool-chevron">↓</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Berjalan paralel dengan Hunter — memantau kompetitor agar positioning & pricing outreach selalu lebih kompetitif.</div>
+        <div class="tool-steps">
+          <div class="tool-step"><div class="ts-num">1</div><span>Monitor website & pricing kompetitor secara otomatis</span></div>
+          <div class="tool-step"><div class="ts-num">2</div><span>Identifikasi market gap & kelemahan kompetitor</span></div>
+          <div class="tool-step"><div class="ts-num">3</div><span>Kirim alert ke tim jika ada perubahan offering kompetitor</span></div>
+          <div class="tool-step"><div class="ts-num">4</div><span>Update value proposition outreach berdasarkan insight terbaru</span></div>
+        </div>
+        <div class="tool-out">
+          <span class="out-label">OUTPUT →</span>
+          <span class="out-tag">Insight positioning real-time</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- IF: target response? -->
+    <div class="diamond-wrap">
+      <div class="diamond">Target<br>Merespons?</div>
+      <div class="branch-row">
+        <div class="branch">
+          <div class="branch-label yes-label">✓ YA — Klik link</div>
+          <div class="branch-line" style="background:rgba(181,242,61,.2)"></div>
+        </div>
+        <div class="branch">
+          <div class="branch-label no-label">✗ TIDAK</div>
+          <div class="branch-line" style="background:rgba(248,113,113,.2)"></div>
+          <div class="node-small" style="--c:var(--red)">
+            <strong>Hunter kirim follow-up</strong>
+            max 3x dalam 2 minggu lalu arsip
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- ── FASE 2: LEAD CAPTURE ── -->
+    <div class="phase-label-row"><div class="phase-line"></div><div class="phase-label">FASE 2 · LEAD CAPTURE</div><div class="phase-line"></div></div>
+
+    <!-- TOOL 3: Lead Magnet Generator Pro -->
+    <div class="node-tool" style="--c:var(--green);--bg2:#0a0e05" onclick="toggle(this)">
+      <div class="tool-head">
+        <div class="tool-icon">🧲</div>
+        <div class="tool-meta">
+          <div class="tool-num">TOOL 03 · WEB APP</div>
+          <div class="tool-name">Lead Magnet Generator Pro</div>
+        </div>
+        <div class="tool-type">WEB APP</div>
+        <div class="tool-chevron">↓</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Visitor mengisi audit tool gratis → sistem kualifikasi kebutuhan & budget secara otomatis via form interaktif.</div>
+        <div class="tool-steps">
+          <div class="tool-step"><div class="ts-num">1</div><span>Website Audit Checker dengan scoring system (skor 0–100)</span></div>
+          <div class="tool-step"><div class="ts-num">2</div><span>Interactive Price Calculator → estimasi harga per kebutuhan</span></div>
+          <div class="tool-step"><div class="ts-num">3</div><span>Instant Mockup Generator sesuai industri visitor</span></div>
+          <div class="tool-step"><div class="ts-num">4</div><span>Lead scoring otomatis → email + WA dikumpulkan via multi-step funnel</span></div>
+        </div>
+        <div class="tool-out">
+          <span class="out-label">OUTPUT →</span>
+          <span class="out-tag">Data lead masuk CRM</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- IF: budget ada? -->
+    <div class="diamond-wrap">
+      <div class="diamond">Budget &<br>Kontak Diisi?</div>
+      <div class="branch-row">
+        <div class="branch">
+          <div class="branch-label yes-label">✓ YA</div>
+          <div class="branch-line" style="background:rgba(181,242,61,.2)"></div>
+        </div>
+        <div class="branch">
+          <div class="branch-label no-label">✗ TIDAK</div>
+          <div class="branch-line" style="background:rgba(248,113,113,.2)"></div>
+          <div class="node-small" style="--c:var(--red)">
+            <strong>SEO Content Factory aktif</strong>
+            Tarik balik via konten organik
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- ── FASE 3: KUALIFIKASI ── -->
+    <div class="phase-label-row"><div class="phase-line"></div><div class="phase-label">FASE 3 · KUALIFIKASI</div><div class="phase-line"></div></div>
+
+    <!-- TOOL 4: Prospek Qualifier Agent -->
+    <div class="node-tool" style="--c:var(--blue);--bg2:#080c12" onclick="toggle(this)">
+      <div class="tool-head">
+        <div class="tool-icon">🤖</div>
+        <div class="tool-meta">
+          <div class="tool-num">TOOL 04 · AI AGENT</div>
+          <div class="tool-name">Prospek Qualifier Agent</div>
+        </div>
+        <div class="tool-type">AI AGENT</div>
+        <div class="tool-chevron">↓</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Chatbot AI melakukan kualifikasi BANT otomatis melalui percakapan WA/chat untuk tentukan prioritas follow-up.</div>
+        <div class="tool-steps">
+          <div class="tool-step"><div class="ts-num">B</div><span><strong>Budget</strong> — konfirmasi range anggaran yang dimiliki</span></div>
+          <div class="tool-step"><div class="ts-num">A</div><span><strong>Authority</strong> — apakah dia decision maker?</span></div>
+          <div class="tool-step"><div class="ts-num">N</div><span><strong>Need</strong> — fitur apa yang dibutuhkan?</span></div>
+          <div class="tool-step"><div class="ts-num">T</div><span><strong>Timeline</strong> — kapan mau mulai?</span></div>
+        </div>
+        <div class="tool-out">
+          <span class="out-label">OUTPUT →</span>
+          <span class="out-tag">Skor BANT 0–100</span>
+          <span class="out-tag">Status: HOT / WARM / COLD</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- IF: skor? -->
+    <div class="diamond-wrap">
+      <div class="diamond">Skor<br>BANT?</div>
+      <div class="branch-row">
+        <div class="branch" style="max-width:200px">
+          <div class="branch-label yes-label">🔴 HOT ≥70</div>
+          <div class="branch-line" style="background:rgba(181,242,61,.2)"></div>
+          <div class="node-small" style="--c:var(--green)">
+            <strong>Notif langsung ke Sales</strong>
+            Prioritas follow-up hari ini
+          </div>
+        </div>
+        <div class="branch" style="max-width:200px">
+          <div class="branch-label" style="background:rgba(251,191,36,.1);color:var(--orange)">🟡 WARM 40–69</div>
+          <div class="branch-line" style="background:rgba(251,191,36,.2)"></div>
+          <div class="node-small" style="--c:var(--orange)">
+            <strong>Masuk Nurture Flow</strong>
+            Smart Nurture Conductor aktif
+          </div>
+        </div>
+        <div class="branch" style="max-width:180px">
+          <div class="branch-label no-label">⚪ COLD &lt;40</div>
+          <div class="branch-line" style="background:rgba(248,113,113,.2)"></div>
+          <div class="node-small" style="--c:var(--red)">
+            <strong>Long-term nurture</strong>
+            Konten edukasi 30–90 hari
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- ── FASE 4: NURTURING ── -->
+    <div class="phase-label-row"><div class="phase-line"></div><div class="phase-label">FASE 4 · NURTURING</div><div class="phase-line"></div></div>
+
+    <!-- TOOL 5: Content Marketing Autopilot -->
+    <div class="node-tool" style="--c:var(--teal);--bg2:#070e0d" onclick="toggle(this)">
+      <div class="tool-head">
+        <div class="tool-icon">✍️</div>
+        <div class="tool-meta">
+          <div class="tool-num">TOOL 05 · WEB APP</div>
+          <div class="tool-name">Content Marketing Autopilot</div>
+        </div>
+        <div class="tool-type">WEB APP</div>
+        <div class="tool-chevron">↓</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Generate & jadwalkan konten SEO (blog, IG, LinkedIn) otomatis untuk menarik traffic organik dan nurture semua segmen leads.</div>
+        <div class="tool-steps">
+          <div class="tool-step"><div class="ts-num">1</div><span>AI content generator untuk artikel dan social media per industri</span></div>
+          <div class="tool-step"><div class="ts-num">2</div><span>SEO optimizer dengan keyword research otomatis</span></div>
+          <div class="tool-step"><div class="ts-num">3</div><span>Multi-channel scheduling: blog, IG, LinkedIn, Facebook</span></div>
+          <div class="tool-step"><div class="ts-num">4</div><span>Analytics dashboard untuk track performa tiap konten</span></div>
+        </div>
+        <div class="tool-out">
+          <span class="out-label">OUTPUT →</span>
+          <span class="out-tag">50+ konten/bulan otomatis</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- TOOL 6: SEO Content Factory (Openclaw) -->
+    <div class="node-tool" style="--c:var(--orange);--bg2:#0f0c07" onclick="toggle(this)">
+      <div class="tool-head">
+        <div class="tool-icon">⚙️</div>
+        <div class="tool-meta">
+          <div class="tool-num">TOOL 06 · OPENCLAW AGENT</div>
+          <div class="tool-name">SEO Content Factory</div>
+        </div>
+        <div class="tool-type">OPENCLAW</div>
+        <div class="tool-chevron">↓</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Autonomous agent yang melakukan keyword research, nulis artikel 1500–2000 kata, dan publish ke WordPress/CMS secara terjadwal tanpa input manual.</div>
+        <div class="tool-steps">
+          <div class="tool-step"><div class="ts-num">1</div><span>Keyword research long-tail untuk topik pembuatan website</span></div>
+          <div class="tool-step"><div class="ts-num">2</div><span>Generate artikel SEO-optimized lengkap dengan meta tags & CTA</span></div>
+          <div class="tool-step"><div class="ts-num">3</div><span>Optimasi gambar & formatting untuk SEO on-page</span></div>
+          <div class="tool-step"><div class="ts-num">4</div><span>Publish ke WordPress & submit ke Search Console</span></div>
+          <div class="tool-step"><div class="ts-num">5</div><span>Monitor ranking & refresh artikel lama yang turun</span></div>
+        </div>
+        <div class="tool-out">
+          <span class="out-label">OUTPUT →</span>
+          <span class="out-tag">Traffic organik +200% dalam 3 bulan</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- TOOL 7: Portfolio Showcase Engine -->
+    <div class="node-tool" style="--c:var(--green);--bg2:#0a0e05" onclick="toggle(this)">
+      <div class="tool-head">
+        <div class="tool-icon">🖼️</div>
+        <div class="tool-meta">
+          <div class="tool-num">TOOL 07 · WEB APP</div>
+          <div class="tool-name">Portfolio Showcase Engine</div>
+        </div>
+        <div class="tool-type">WEB APP</div>
+        <div class="tool-chevron">↓</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Platform interaktif untuk menampilkan portfolio dengan filter industri, budget, dan fitur — membangun trust lebih cepat.</div>
+        <div class="tool-steps">
+          <div class="tool-step"><div class="ts-num">1</div><span>Interactive portfolio gallery dengan filter multi-criteria</span></div>
+          <div class="tool-step"><div class="ts-num">2</div><span>Before-after comparison slider untuk visualisasi hasil kerja</span></div>
+          <div class="tool-step"><div class="ts-num">3</div><span>Case study template dengan ROI metrics nyata</span></div>
+          <div class="tool-step"><div class="ts-num">4</div><span>Client testimonial video player + CTA di setiap portfolio</span></div>
+        </div>
+        <div class="tool-out">
+          <span class="out-label">OUTPUT →</span>
+          <span class="out-tag">Trust +60% · Sales cycle lebih pendek</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- TOOL 8: Content Personalization Agent -->
+    <div class="node-tool" style="--c:var(--purple);--bg2:#0d0b12" onclick="toggle(this)">
+      <div class="tool-head">
+        <div class="tool-icon">🎯</div>
+        <div class="tool-meta">
+          <div class="tool-num">TOOL 08 · AI AGENT</div>
+          <div class="tool-name">Content Personalization Agent</div>
+        </div>
+        <div class="tool-type">AI AGENT</div>
+        <div class="tool-chevron">↓</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Saat lead mengunjungi website, agent ini menganalisis behavior & industri mereka lalu mengubah konten homepage, CTA, dan portfolio secara real-time.</div>
+        <div class="tool-steps">
+          <div class="tool-step"><div class="ts-num">1</div><span>Real-time visitor behavior analysis (industri, halaman yang dikunjungi)</span></div>
+          <div class="tool-step"><div class="ts-num">2</div><span>Dynamic content personalization — homepage berubah sesuai industri visitor</span></div>
+          <div class="tool-step"><div class="ts-num">3</div><span>Smart CTA placement & messaging yang relevan</span></div>
+          <div class="tool-step"><div class="ts-num">4</div><span>A/B testing otomatis untuk optimasi konversi</span></div>
+        </div>
+        <div class="tool-out">
+          <span class="out-label">OUTPUT →</span>
+          <span class="out-tag">Engagement & konversi website naik</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- TOOL 9: Smart Nurture Conductor -->
+    <div class="node-tool" style="--c:var(--orange);--bg2:#0f0c07" onclick="toggle(this)">
+      <div class="tool-head">
+        <div class="tool-icon">🧠</div>
+        <div class="tool-meta">
+          <div class="tool-num">TOOL 09 · OPENCLAW AGENT</div>
+          <div class="tool-name">Smart Nurture Conductor</div>
+        </div>
+        <div class="tool-type">OPENCLAW</div>
+        <div class="tool-chevron">↓</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Mengelola entire nurturing journey — memilih konten & timing follow-up yang tepat berdasarkan behavior setiap lead secara individual.</div>
+        <div class="tool-steps">
+          <div class="tool-step"><div class="ts-num">1</div><span>Monitor behavior: email opens, kunjungan website, download konten</span></div>
+          <div class="tool-step"><div class="ts-num">2</div><span>Tentukan funnel stage & readiness level tiap lead via scoring algorithm</span></div>
+          <div class="tool-step"><div class="ts-num">3</div><span>Kirim sequence konten personalisasi via email, WA, atau SMS</span></div>
+          <div class="tool-step"><div class="ts-num">4</div><span>Identifikasi lead yang siap sales call → trigger notifikasi ke tim</span></div>
+          <div class="tool-step"><div class="ts-num">5</div><span>Continuously optimize sequence berdasarkan data konversi</span></div>
+        </div>
+        <div class="tool-out">
+          <span class="out-label">OUTPUT →</span>
+          <span class="out-tag">Lead siap closing → lanjut Fase 5</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- TOOL 10: Follow-up Automation Agent -->
+    <div class="node-tool" style="--c:var(--blue);--bg2:#080c12" onclick="toggle(this)">
+      <div class="tool-head">
+        <div class="tool-icon">💬</div>
+        <div class="tool-meta">
+          <div class="tool-num">TOOL 10 · AI AGENT</div>
+          <div class="tool-name">Follow-up Automation Agent</div>
+        </div>
+        <div class="tool-type">AI AGENT</div>
+        <div class="tool-chevron">↓</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Eksekutor follow-up harian via email & WhatsApp. Memastikan tidak ada lead yang terlewat di setiap tahap funnel.</div>
+        <div class="tool-steps">
+          <div class="tool-step"><div class="ts-num">1</div><span>Multi-channel follow-up: email, WhatsApp, SMS sesuai preferensi lead</span></div>
+          <div class="tool-step"><div class="ts-num">2</div><span>Pesan dipersonalisasi berdasarkan data profil & behavior lead</span></div>
+          <div class="tool-step"><div class="ts-num">3</div><span>Behavioral trigger: reminder otomatis jika lead buka proposal tapi belum TTD</span></div>
+          <div class="tool-step"><div class="ts-num">4</div><span>Smart scheduling — kirim di waktu optimal berdasarkan open rate historis</span></div>
+          <div class="tool-step"><div class="ts-num">5</div><span>Escalation otomatis ke human sales saat lead masuk status HOT</span></div>
+        </div>
+        <div class="tool-out">
+          <span class="out-label">OUTPUT →</span>
+          <span class="out-tag">0 lead terlewat · Nurturing konsisten</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- IF: siap closing? -->
+    <div class="diamond-wrap">
+      <div class="diamond">Lead Siap<br>Closing?</div>
+      <div class="branch-row">
+        <div class="branch">
+          <div class="branch-label yes-label">✓ YA — Siap</div>
+          <div class="branch-line" style="background:rgba(181,242,61,.2)"></div>
+        </div>
+        <div class="branch">
+          <div class="branch-label no-label">✗ Belum</div>
+          <div class="branch-line" style="background:rgba(248,113,113,.2)"></div>
+          <div class="node-small" style="--c:var(--orange)">
+            <strong>Kembali ke Nurture</strong>
+            Conductor atur ulang sequence
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- ── FASE 5: PROPOSAL ── -->
+    <div class="phase-label-row"><div class="phase-line"></div><div class="phase-label">FASE 5 · PROPOSAL & CLOSING</div><div class="phase-line"></div></div>
+
+    <!-- TOOL 11: Smart Proposal Builder -->
+    <div class="node-tool" style="--c:var(--green);--bg2:#0a0e05" onclick="toggle(this)">
+      <div class="tool-head">
+        <div class="tool-icon">📄</div>
+        <div class="tool-meta">
+          <div class="tool-num">TOOL 11 · WEB APP</div>
+          <div class="tool-name">Smart Proposal Builder</div>
+        </div>
+        <div class="tool-type">WEB APP</div>
+        <div class="tool-chevron">↓</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Sales generate proposal profesional dalam 15 menit berdasarkan data CRM — template dinamis sesuai industri klien.</div>
+        <div class="tool-steps">
+          <div class="tool-step"><div class="ts-num">1</div><span>Template library 20+ industri — pilih otomatis berdasarkan data lead</span></div>
+          <div class="tool-step"><div class="ts-num">2</div><span>Auto-populate semua data dari lead form & CRM</span></div>
+          <div class="tool-step"><div class="ts-num">3</div><span>Dynamic pricing module dengan package options yang bisa dikustomisasi</span></div>
+          <div class="tool-step"><div class="ts-num">4</div><span>Digital signature integration — klien TTD langsung di email</span></div>
+          <div class="tool-step"><div class="ts-num">5</div><span>Proposal tracking & reminder otomatis jika belum dibuka 24 jam</span></div>
+        </div>
+        <div class="tool-out">
+          <span class="out-label">OUTPUT →</span>
+          <span class="out-tag">Proposal dalam 15 menit</span>
+          <span class="out-tag">Closing rate +40%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- TOOL 12: Proposal Generator Bot (Openclaw) -->
+    <div class="node-tool" style="--c:var(--orange);--bg2:#0f0c07" onclick="toggle(this)">
+      <div class="tool-head">
+        <div class="tool-icon">🤖</div>
+        <div class="tool-meta">
+          <div class="tool-num">TOOL 12 · OPENCLAW AGENT</div>
+          <div class="tool-name">Proposal Generator Bot</div>
+        </div>
+        <div class="tool-type">OPENCLAW</div>
+        <div class="tool-chevron">↓</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Versi autonomous dari proposal builder — generate proposal TANPA input manual setelah lead terqualifikasi, lalu kirim & track sendiri.</div>
+        <div class="tool-steps">
+          <div class="tool-step"><div class="ts-num">1</div><span>Ambil data prospek dari CRM: industri, requirements, budget, timeline</span></div>
+          <div class="tool-step"><div class="ts-num">2</div><span>Select & populate template proposal yang paling sesuai secara otomatis</span></div>
+          <div class="tool-step"><div class="ts-num">3</div><span>Generate scope of work, pricing options & timeline custom</span></div>
+          <div class="tool-step"><div class="ts-num">4</div><span>Create visual mockup menggunakan template library</span></div>
+          <div class="tool-step"><div class="ts-num">5</div><span>Kirim via email dengan tracking link + follow-up reminder otomatis</span></div>
+        </div>
+        <div class="tool-out">
+          <span class="out-label">OUTPUT →</span>
+          <span class="out-tag">Proposal terkirim tanpa sentuh manual</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- IF: deal? -->
+    <div class="diamond-wrap">
+      <div class="diamond">Proposal<br>Ditandatangani?</div>
+      <div class="branch-row">
+        <div class="branch">
+          <div class="branch-label yes-label">✓ DEAL ✅</div>
+          <div class="branch-line" style="background:rgba(181,242,61,.2)"></div>
+        </div>
+        <div class="branch">
+          <div class="branch-label no-label">✗ Keberatan</div>
+          <div class="branch-line" style="background:rgba(248,113,113,.2)"></div>
+          <div class="node-small" style="--c:var(--red)">
+            <strong>Follow-up Agent aktif</strong>
+            Behavioral trigger jika proposal dibuka tapi belum TTD
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:#333"></div>
+
+    <!-- ── FASE 6: CLIENT & REFERRAL ── -->
+    <div class="phase-label-row"><div class="phase-line"></div><div class="phase-label">FASE 6 · CLIENT & REFERRAL</div><div class="phase-line"></div></div>
+
+    <!-- TOOL 13: Referral Rewards System -->
+    <div class="node-tool" style="--c:var(--green);--bg2:#0a0e05" onclick="toggle(this)">
+      <div class="tool-head">
+        <div class="tool-icon">🎁</div>
+        <div class="tool-meta">
+          <div class="tool-num">TOOL 13 · WEB APP</div>
+          <div class="tool-name">Referral Rewards System</div>
+        </div>
+        <div class="tool-type">WEB APP</div>
+        <div class="tool-chevron">↓</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-desc">Setelah website klien live, sistem gamifikasi mendorong mereka merekomendasikan layanan ke network bisnis mereka.</div>
+        <div class="tool-steps">
+          <div class="tool-step"><div class="ts-num">1</div><span>Generate unique referral link personal untuk setiap klien</span></div>
+          <div class="tool-step"><div class="ts-num">2</div><span>Point system & reward catalog (diskon maintenance, cashback, dll)</span></div>
+          <div class="tool-step"><div class="ts-num">3</div><span>Referral tracking dashboard real-time untuk klien pantau reward mereka</span></div>
+          <div class="tool-step"><div class="ts-num">4</div><span>Automated reward distribution saat referral berhasil closing</span></div>
+          <div class="tool-step"><div class="ts-num">5</div><span>Leaderboard gamification untuk dorong kompetisi positif antar klien</span></div>
+        </div>
+        <div class="tool-out">
+          <span class="out-label">OUTPUT →</span>
+          <span class="out-tag">40% new leads dari referral</span>
+          <span class="out-tag">Budget iklan = 0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:var(--green)"></div>
+
+    <!-- LOOP BACK -->
+    <div class="loop-box">
+      <div class="loop-icon">🔄</div>
+      <div class="loop-text">
+        Setiap referral yang masuk → <strong>kembali ke FASE 1</strong><br>
+        Lead Generation Hunter & Qualifier Agent aktif kembali secara otomatis.<br>
+        Siklus berjalan terus — tanpa biaya iklan tambahan.
+      </div>
+    </div>
+
+    <div class="line solid" style="--clr:var(--green)"></div>
+
+    <!-- END -->
+    <div class="node-end">🏆 SELF-SUSTAINING SYSTEM</div>
+
+  </div><!-- /flow -->
+
+  <div class="footer">
+    IdeaForge AI — Powered by Claude · <span>13 Tools · Full Flowchart</span>
+  </div>
+
+</div>
+
+<script>
+  function toggle(el) {
+    el.classList.toggle('open');
+  }
+</script>
+</body>
+</html>
